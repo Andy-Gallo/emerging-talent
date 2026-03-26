@@ -1,0 +1,21 @@
+{
+  "name": "emerging-talent-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:migrate": "pnpm --filter @etp/db migrate",
+    "db:seed": "pnpm --filter @etp/db seed",
+    "db:reset": "pnpm --filter @etp/db reset"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.3",
+    "tsx": "^4.19.4"
+  }
+}

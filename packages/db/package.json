@@ -1,0 +1,21 @@
+{
+  "name": "@etp/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "migrate": "drizzle-kit push",
+    "seed": "tsx src/seeds/seed.ts",
+    "reset": "tsx src/seeds/reset.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.44.2",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.1",
+    "tsx": "^4.19.4"
+  }
+}
