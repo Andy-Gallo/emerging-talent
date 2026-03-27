@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
+import {
+  AddApplicationNoteDto,
+  CreateOrUpdateApplicationDto,
+  UpdateApplicationStatusDto,
+} from "./applications.dto";
 import { ApplicationsService } from "./applications.service";
 
 @Controller("applications")
@@ -16,14 +21,7 @@ export class ApplicationsController {
   @Post()
   async createOrUpdate(
     @CurrentUser() user: { sub: string },
-    @Body()
-    body: {
-      roleId: string;
-      note?: string;
-      answers?: Array<{ questionId: string; answer: string }>;
-      mediaAssetIds?: string[];
-      submit?: boolean;
-    },
+    @Body() body: CreateOrUpdateApplicationDto,
   ) {
     return { data: await this.applicationsService.createOrUpdateDraft(user.sub, body) };
   }
@@ -42,7 +40,7 @@ export class ApplicationsController {
   async updateStatus(
     @CurrentUser() user: { sub: string },
     @Param("applicationId") applicationId: string,
-    @Body() body: { status: string },
+    @Body() body: UpdateApplicationStatusDto,
   ) {
     return { data: await this.applicationsService.updateStatus(user.sub, applicationId, body.status) };
   }
@@ -51,7 +49,7 @@ export class ApplicationsController {
   async addNote(
     @CurrentUser() user: { sub: string },
     @Param("applicationId") applicationId: string,
-    @Body() body: { note: string },
+    @Body() body: AddApplicationNoteDto,
   ) {
     return { data: await this.applicationsService.addInternalNote(user.sub, applicationId, body.note) };
   }

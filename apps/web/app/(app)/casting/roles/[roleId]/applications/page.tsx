@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { API_BASE_URL } from "@/lib/api/client";
 
@@ -11,15 +11,15 @@ export default function RoleApplicationsPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [note, setNote] = useState<Record<string, string>>({});
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const response = await fetch(`${API_BASE_URL}/applications/role/${params.roleId}`, { credentials: "include" });
     const json = await response.json();
     setApplications(json.data ?? []);
-  };
+  }, [params.roleId]);
 
   useEffect(() => {
     void load();
-  }, [params.roleId]);
+  }, [load]);
 
   const changeStatus = async (applicationId: string, status: string) => {
     await fetch(`${API_BASE_URL}/applications/${applicationId}/status`, {

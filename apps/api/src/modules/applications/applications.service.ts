@@ -12,20 +12,10 @@ import {
   roles,
   talentProfiles,
 } from "@etp/db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { ProjectsService } from "../projects/projects.service";
-
-const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  draft: ["submitted", "withdrawn"],
-  submitted: ["in_review", "shortlisted", "rejected", "withdrawn"],
-  in_review: ["shortlisted", "audition_requested", "rejected", "accepted"],
-  shortlisted: ["audition_requested", "rejected", "accepted"],
-  audition_requested: ["audition_completed", "rejected", "accepted"],
-  audition_completed: ["accepted", "rejected"],
-  accepted: [],
-  rejected: [],
-  withdrawn: [],
-};
+import { canTransitionApplicationStatus } from "./application-status";
+import { CreateOrUpdateApplicationDto } from "./applications.dto";
 
 @Injectable()
 export class ApplicationsService {
@@ -35,19 +25,18 @@ export class ApplicationsService {
     return db.select().from(applications).where(eq(applications.applicantUserId, userId));
   }
 
-  async createOrUpdateDraft(
-    userId: string,
-    body: {
-      roleId: string;
-      note?: string;
-      answers?: Array<{ questionId: string; answer: string }>;
-      mediaAssetIds?: string[];
-      submit?: boolean;
-    },
-  ) {
+  async createOrUpdateDraft(userId: string, body: CreateOrUpdateApplicationDto) {
     const [role] = await db.select().from(roles).where(eq(roles.id, body.roleId)).limit(1);
     if (!role) {
       throw new BadRequestException("Role not found.");
+    }
+
+    if (body.submit && role.status !== "open") {
+      throw new BadRequestException("Only open roles can receive submitted applications.");
+    }
+
+    if (body.submit && role.deadlineAt && role.deadlineAt < new Date()) {
+      throw new BadRequestException("The role application deadline has passed.");
     }
 
     const canView = await this.projectsService.canUserViewProject(userId, role.projectId);
@@ -68,6 +57,10 @@ export class ApplicationsService {
       .from(applications)
       .where(and(eq(applications.roleId, body.roleId), eq(applications.applicantUserId, userId)))
       .limit(1);
+
+    if (body.submit && existing && !["draft", "submitted"].includes(existing.status)) {
+      throw new BadRequestException(`Cannot submit an application currently in ${existing.status} state.`);
+    }
 
     const nextStatus = body.submit ? "submitted" : existing?.status ?? "draft";
 
@@ -103,6 +96,25 @@ export class ApplicationsService {
         )[0];
 
     if (body.answers) {
+      if (body.answers.length > 0) {
+        const validQuestionIds = new Set(
+          (
+            await db
+              .select({ id: roleQuestions.id })
+              .from(roleQuestions)
+              .where(eq(roleQuestions.roleId, role.id))
+          ).map((row) => row.id),
+        );
+
+        const invalidQuestionIds = body.answers
+          .map((answer) => answer.questionId)
+          .filter((questionId) => !validQuestionIds.has(questionId));
+
+        if (invalidQuestionIds.length > 0) {
+          throw new BadRequestException("One or more answers reference invalid role questions.");
+        }
+      }
+
       await db.delete(applicationQuestionAnswers).where(eq(applicationQuestionAnswers.applicationId, application.id));
       if (body.answers.length > 0) {
         await db.insert(applicationQuestionAnswers).values(
@@ -116,6 +128,25 @@ export class ApplicationsService {
     }
 
     if (body.mediaAssetIds) {
+      if (body.mediaAssetIds.length > 0) {
+        const linkedMedia = await db
+          .select({ mediaAssetId: profileMedia.mediaAssetId })
+          .from(profileMedia)
+          .where(
+            and(
+              eq(profileMedia.profileId, profile?.id ?? ""),
+              inArray(profileMedia.mediaAssetId, body.mediaAssetIds),
+            ),
+          );
+
+        const linkedMediaIds = new Set(linkedMedia.map((row) => row.mediaAssetId));
+        const invalidMediaIds = body.mediaAssetIds.filter((mediaAssetId) => !linkedMediaIds.has(mediaAssetId));
+
+        if (invalidMediaIds.length > 0) {
+          throw new BadRequestException("One or more application media assets are not linked to your profile.");
+        }
+      }
+
       await db.delete(applicationMediaAssets).where(eq(applicationMediaAssets.applicationId, application.id));
       if (body.mediaAssetIds.length > 0) {
         await db.insert(applicationMediaAssets).values(
@@ -198,8 +229,7 @@ export class ApplicationsService {
 
     await this.projectsService.assertProjectReviewAccess(userId, application.projectId);
 
-    const allowed = ALLOWED_TRANSITIONS[application.status] ?? [];
-    if (!allowed.includes(toStatus)) {
+    if (!canTransitionApplicationStatus(application.status, toStatus)) {
       throw new BadRequestException(`Cannot transition from ${application.status} to ${toStatus}.`);
     }
 

@@ -52,7 +52,7 @@ export default function ProjectDetailPage() {
       <section className="rounded-2xl border border-border bg-card p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Roles</h2>
-          <Link href={`/projects/${params.projectId}/roles/new`} className="rounded-md border border-border px-3 py-2 text-sm">
+          <Link href={`/projects/manage/${params.projectId}/roles/new`} className="rounded-md border border-border px-3 py-2 text-sm">
             New role
           </Link>
         </div>

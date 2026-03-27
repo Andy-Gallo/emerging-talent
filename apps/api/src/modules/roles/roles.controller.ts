@@ -5,6 +5,7 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
 import { OptionalAuthGuard } from "../../common/guards/optional-auth.guard";
 import { ProjectsService } from "../projects/projects.service";
+import { CreateRoleDto, UpdateRoleDto } from "./roles.dto";
 
 @Controller("roles")
 export class RolesController {
@@ -22,10 +23,16 @@ export class RolesController {
     return { data: rows };
   }
 
+  @UseGuards(OptionalAuthGuard)
   @Get(":roleId")
-  async detail(@Param("roleId") roleId: string) {
+  async detail(@Param("roleId") roleId: string, @CurrentUser() user?: { sub: string }) {
     const [role] = await db.select().from(roles).where(eq(roles.id, roleId)).limit(1);
     if (!role) {
+      return { data: null };
+    }
+
+    const canView = await this.projectsService.canUserViewProject(user?.sub ?? null, role.projectId);
+    if (!canView) {
       return { data: null };
     }
 
@@ -37,19 +44,7 @@ export class RolesController {
   @Post()
   async create(
     @CurrentUser() user: { sub: string },
-    @Body()
-    body: {
-      projectId: string;
-      title: string;
-      roleType?: string;
-      description?: string;
-      compensationType?: string;
-      compensationText?: string;
-      deadlineAt?: string;
-      isRemote?: boolean;
-      status?: "draft" | "open" | "paused" | "closed";
-      roleQuestions?: Array<{ question: string; isRequired?: boolean; inputType?: string }>;
-    },
+    @Body() body: CreateRoleDto,
   ) {
     await this.projectsService.assertProjectEditAccess(user.sub, body.projectId);
 
@@ -88,16 +83,7 @@ export class RolesController {
   async update(
     @CurrentUser() user: { sub: string },
     @Param("roleId") roleId: string,
-    @Body()
-    body: Partial<{
-      title: string;
-      description: string;
-      status: "draft" | "open" | "paused" | "closed";
-      compensationType: string;
-      compensationText: string;
-      deadlineAt: string;
-      isRemote: boolean;
-    }>,
+    @Body() body: UpdateRoleDto,
   ) {
     const [role] = await db.select().from(roles).where(eq(roles.id, roleId)).limit(1);
     if (!role) {

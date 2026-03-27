@@ -30,10 +30,10 @@ export default function ProjectsPage() {
           <h2 className="mt-2 text-xl font-semibold">{project.title}</h2>
           <p className="mt-2 text-sm text-zinc-700">{project.summary}</p>
           <div className="mt-4 flex gap-2">
-            <Link href={`/projects/${project.id}`} className="rounded-md border border-border px-3 py-2 text-sm">
+            <Link href={`/projects/manage/${project.id}`} className="rounded-md border border-border px-3 py-2 text-sm">
               Manage
             </Link>
-            <Link href={`/projects/${project.id}/roles/new`} className="rounded-md border border-border px-3 py-2 text-sm">
+            <Link href={`/projects/manage/${project.id}/roles/new`} className="rounded-md border border-border px-3 py-2 text-sm">
               Add role
             </Link>
           </div>

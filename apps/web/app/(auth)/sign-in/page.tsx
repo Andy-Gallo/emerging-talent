@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { API_BASE_URL } from "@/lib/api/client";
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") ?? "/dashboard";
@@ -62,5 +63,13 @@ export default function SignInPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto flex min-h-screen max-w-md items-center px-6 py-12">Loading...</div>}>
+      <SignInForm />
+    </Suspense>
   );
 }

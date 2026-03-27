@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
+import { RequestAuditionDto, SubmitAuditionDto } from "./auditions.dto";
 import { AuditionsService } from "./auditions.service";
 
 @Controller("auditions")
@@ -16,14 +17,7 @@ export class AuditionsController {
   @Post("request")
   async request(
     @CurrentUser() user: { sub: string },
-    @Body()
-    body: {
-      applicationId: string;
-      mode: "live" | "self_tape";
-      message?: string;
-      dueAt?: string;
-      slots?: Array<{ startsAt: string; endsAt: string; locationText?: string; meetingUrl?: string }>;
-    },
+    @Body() body: RequestAuditionDto,
   ) {
     return { data: await this.auditionsService.request(user.sub, body) };
   }
@@ -31,7 +25,7 @@ export class AuditionsController {
   @Post("submit")
   async submit(
     @CurrentUser() user: { sub: string },
-    @Body() body: { auditionRequestId: string; slotId?: string; selfTapeMediaAssetId?: string; note?: string },
+    @Body() body: SubmitAuditionDto,
   ) {
     return { data: await this.auditionsService.submit(user.sub, body) };
   }

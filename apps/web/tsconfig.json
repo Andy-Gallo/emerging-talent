@@ -1,33 +1,36 @@
 {
-    "extends":  "../../tsconfig.base.json",
-    "compilerOptions":  {
-                            "lib":  [
-                                        "dom",
-                                        "dom.iterable",
-                                        "esnext"
-                                    ],
-                            "allowJs":  false,
-                            "incremental":  true,
-                            "jsx":  "preserve",
-                            "plugins":  [
-                                            {
-                                                "name":  "next"
-                                            }
-                                        ],
-                            "module":  "ESNext",
-                            "moduleResolution":  "Bundler",
-                            "paths":  {
-                                          "@/*":  [
-                                                      "./*"
-                                                  ]
-                                      }
-                        },
-    "include":  [
-                    "next-env.d.ts",
-                    "**/*.ts",
-                    "**/*.tsx"
-                ],
-    "exclude":  [
-                    "node_modules"
-                ]
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": false,
+    "incremental": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

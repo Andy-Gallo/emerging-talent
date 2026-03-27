@@ -26,7 +26,7 @@ export default function NewRolePage() {
     });
 
     if (response.ok) {
-      router.push(`/projects/${params.projectId}`);
+      router.push(`/projects/manage/${params.projectId}`);
     }
   };
 

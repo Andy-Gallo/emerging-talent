@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { db, projectVisibilityInstitutions, projects, roles } from "@etp/db";
 import { and, desc, eq } from "drizzle-orm";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
 import { OptionalAuthGuard } from "../../common/guards/optional-auth.guard";
+import { CreateProjectDto, UpdateProjectDto } from "./projects.dto";
 import { ProjectsService } from "./projects.service";
 
 @Controller("projects")
@@ -50,21 +51,13 @@ export class ProjectsController {
   @Post()
   async create(
     @CurrentUser() user: { sub: string },
-    @Body()
-    body: {
-      organizationId: string;
-      title: string;
-      slug: string;
-      summary: string;
-      description: string;
-      visibilityScope: "campus_only" | "selected_institutions" | "public_network";
-      selectedInstitutionIds?: string[];
-      locationText?: string;
-      compensationSummary?: string;
-      applicationDeadlineAt?: string;
-    },
+    @Body() body: CreateProjectDto,
   ) {
     await this.projectsService.assertOrganizationEditor(user.sub, body.organizationId);
+
+    if (body.visibilityScope === "selected_institutions" && !body.selectedInstitutionIds?.length) {
+      throw new BadRequestException("Selected institution visibility requires at least one institution.");
+    }
 
     const [project] = await db
       .insert(projects)
@@ -101,9 +94,20 @@ export class ProjectsController {
   async update(
     @CurrentUser() user: { sub: string },
     @Param("projectId") projectId: string,
-    @Body() body: Partial<{ status: string; title: string; summary: string; description: string; visibilityScope: string }>,
+    @Body() body: UpdateProjectDto,
   ) {
     await this.projectsService.assertProjectEditAccess(user.sub, projectId);
+
+    if (body.visibilityScope === "selected_institutions" && !body.selectedInstitutionIds?.length) {
+      const existingSelectedInstitutions = await db
+        .select()
+        .from(projectVisibilityInstitutions)
+        .where(eq(projectVisibilityInstitutions.projectId, projectId));
+
+      if (existingSelectedInstitutions.length === 0) {
+        throw new BadRequestException("Selected institution visibility requires at least one institution.");
+      }
+    }
 
     const [updated] = await db
       .update(projects)
@@ -113,10 +117,23 @@ export class ProjectsController {
         description: body.description,
         visibilityScope: body.visibilityScope,
         status: body.status,
+        applicationDeadlineAt: body.applicationDeadlineAt ? new Date(body.applicationDeadlineAt) : undefined,
         updatedAt: new Date(),
       })
       .where(eq(projects.id, projectId))
       .returning();
+
+    if (body.selectedInstitutionIds) {
+      await db.delete(projectVisibilityInstitutions).where(eq(projectVisibilityInstitutions.projectId, projectId));
+      if (body.selectedInstitutionIds.length > 0) {
+        await db.insert(projectVisibilityInstitutions).values(
+          body.selectedInstitutionIds.map((institutionId) => ({
+            projectId,
+            institutionId,
+          })),
+        );
+      }
+    }
 
     return { data: updated };
   }

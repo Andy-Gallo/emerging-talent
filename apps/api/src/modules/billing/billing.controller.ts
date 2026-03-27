@@ -1,11 +1,15 @@
-import { Body, Controller, Get, Headers, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Headers, Post, UseGuards } from "@nestjs/common";
 import { db, plans, stripeEventLog, subscriptions, subscriptionEntitlements } from "@etp/db";
 import { eq } from "drizzle-orm";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
+import { OrganizationsService } from "../organizations/organizations.service";
+import { CheckoutDto } from "./billing.dto";
 
 @Controller("billing")
 export class BillingController {
+  constructor(private readonly organizationsService: OrganizationsService) {}
+
   @Get("plans")
   async listPlans() {
     return { data: await db.select().from(plans).where(eq(plans.isActive, true)) };
@@ -15,8 +19,16 @@ export class BillingController {
   @UseGuards(AuthGuard)
   async checkout(
     @CurrentUser() user: { sub: string },
-    @Body() body: { ownerType: "user" | "organization"; ownerId: string; planId: string },
+    @Body() body: CheckoutDto,
   ) {
+    if (body.ownerType === "user" && body.ownerId !== user.sub) {
+      throw new ForbiddenException("You can only create subscriptions for your own user account.");
+    }
+
+    if (body.ownerType === "organization") {
+      await this.organizationsService.assertOrgRole(user.sub, body.ownerId, ["owner", "admin", "billing"]);
+    }
+
     const [created] = await db
       .insert(subscriptions)
       .values({

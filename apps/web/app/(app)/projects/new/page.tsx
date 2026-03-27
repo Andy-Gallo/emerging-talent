@@ -43,7 +43,7 @@ export default function NewProjectPage() {
       return;
     }
 
-    router.push(`/projects/${json.data.id}`);
+    router.push(`/projects/manage/${json.data.id}`);
   };
 
   return (
