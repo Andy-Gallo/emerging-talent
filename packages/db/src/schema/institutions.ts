@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createdAtColumn, idColumn, updatedAtColumn } from "./_common";
 
 export const institutions = pgTable(
@@ -41,7 +41,7 @@ export const userAffiliations = pgTable(
     programName: text("program_name"),
     graduationYear: integer("graduation_year"),
     verificationMethod: text("verification_method").default("email_domain").notNull(),
-    verifiedAt: createdAtColumn(),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
     status: text("status").default("pending").notNull(),
     isPrimary: boolean("is_primary").default(true).notNull(),
     createdAt: createdAtColumn(),
