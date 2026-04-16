@@ -8,6 +8,7 @@ import {
 } from "@etp/db";
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -21,7 +22,7 @@ import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from "./aut
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(@Inject(JwtService) private readonly jwtService: JwtService) {}
 
   private signSession(payload: SessionPayload): string {
     return this.jwtService.sign(payload, {

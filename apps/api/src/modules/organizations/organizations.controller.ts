@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Post, UseGuards } from "@nestjs/common";
 import { db, organizationMemberships, organizations } from "@etp/db";
 import { eq } from "drizzle-orm";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
@@ -8,7 +8,7 @@ import { OrganizationsService } from "./organizations.service";
 @Controller("organizations")
 @UseGuards(AuthGuard)
 export class OrganizationsController {
-  constructor(private readonly organizationsService: OrganizationsService) {}
+  constructor(@Inject(OrganizationsService) private readonly organizationsService: OrganizationsService) {}
 
   @Get("mine")
   async mine(@CurrentUser() user: { sub: string }) {

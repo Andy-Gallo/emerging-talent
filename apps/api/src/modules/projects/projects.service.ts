@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import {
   db,
   organizations,
@@ -12,7 +12,7 @@ import { OrganizationsService } from "../organizations/organizations.service";
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly organizationsService: OrganizationsService) {}
+  constructor(@Inject(OrganizationsService) private readonly organizationsService: OrganizationsService) {}
 
   async assertOrganizationEditor(userId: string, organizationId: string) {
     await this.organizationsService.assertOrgRole(userId, organizationId, ["owner", "admin", "editor"]);

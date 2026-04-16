@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { db, roleQuestions, roles } from "@etp/db";
 import { eq } from "drizzle-orm";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
@@ -9,7 +9,7 @@ import { CreateRoleDto, UpdateRoleDto } from "./roles.dto";
 
 @Controller("roles")
 export class RolesController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(@Inject(ProjectsService) private readonly projectsService: ProjectsService) {}
 
   @UseGuards(OptionalAuthGuard)
   @Get("project/:projectId")

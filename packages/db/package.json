@@ -5,9 +5,9 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "migrate": "drizzle-kit push",
-    "seed": "tsx src/seeds/seed.ts",
-    "reset": "tsx src/seeds/reset.ts"
+    "migrate": "DOTENV_CONFIG_PATH=../../.env drizzle-kit push",
+    "seed": "DOTENV_CONFIG_PATH=../../.env tsx src/seeds/seed.ts",
+    "reset": "DOTENV_CONFIG_PATH=../../.env tsx src/seeds/reset.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

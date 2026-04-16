@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
 import {
@@ -11,7 +11,7 @@ import { ApplicationsService } from "./applications.service";
 @Controller("applications")
 @UseGuards(AuthGuard)
 export class ApplicationsController {
-  constructor(private readonly applicationsService: ApplicationsService) {}
+  constructor(@Inject(ApplicationsService) private readonly applicationsService: ApplicationsService) {}
 
   @Get("mine")
   async mine(@CurrentUser() user: { sub: string }) {

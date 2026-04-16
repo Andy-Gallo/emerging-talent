@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post, Res, UseGuards } from "@nestjs/common";
 import type { Response } from "express";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
@@ -7,7 +7,7 @@ import { ForgotPasswordDto, ResetPasswordDto, SignInDto, SignUpDto } from "./aut
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 
   @Post("sign-up")
   async signUp(@Body() dto: SignUpDto, @Res({ passthrough: true }) response: Response) {

@@ -1,4 +1,4 @@
-import { boolean, pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createdAtColumn, idColumn, updatedAtColumn } from "./_common";
 
 export const applications = pgTable("applications", {
@@ -10,7 +10,7 @@ export const applications = pgTable("applications", {
   note: text("note"),
   profileSnapshotJson: text("profile_snapshot_json").notNull(),
   mediaSnapshotJson: text("media_snapshot_json").notNull(),
-  submittedAt: createdAtColumn(),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }),
   createdAt: createdAtColumn(),
   updatedAt: updatedAtColumn(),
 });

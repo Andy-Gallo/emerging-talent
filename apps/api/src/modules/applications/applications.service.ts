@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import {
   applicationEvents,
   applicationMediaAssets,
@@ -19,7 +19,7 @@ import { CreateOrUpdateApplicationDto } from "./applications.dto";
 
 @Injectable()
 export class ApplicationsService {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(@Inject(ProjectsService) private readonly projectsService: ProjectsService) {}
 
   async listMine(userId: string) {
     return db.select().from(applications).where(eq(applications.applicantUserId, userId));

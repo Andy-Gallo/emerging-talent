@@ -38,10 +38,16 @@ This repository implements an end-to-end emerging-talent casting and collaborati
 1. Copy env values:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-2. Install and bootstrap:
+2. Start required local services (Postgres on `localhost:54331`, Valkey, Mailpit):
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up -d postgres valkey mailpit
+```
+
+3. Install and bootstrap:
 
 ```bash
 pnpm install
@@ -49,17 +55,27 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-3. Run all apps:
+4. Run all apps:
 
 ```bash
 pnpm dev
 ```
 
-4. Optional Docker local stack:
+5. Optional full Docker local stack:
 
 ```bash
 docker compose -f infra/docker/docker-compose.yml up -d
 ```
+
+6. Optional database UI (Adminer):
+
+- URL: `http://localhost:8082`
+- System: `PostgreSQL`
+- Server: `postgres`
+- Username: `postgres`
+- Password: `postgres`
+- Database: `emerging_talent`
+- App DB connection string: `postgres://postgres:postgres@localhost:54331/emerging_talent`
 
 ## Default Seed Accounts
 

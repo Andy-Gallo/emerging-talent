@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import {
   applicationEvents,
   applications,
@@ -14,7 +14,7 @@ import { RequestAuditionDto, SubmitAuditionDto } from "./auditions.dto";
 
 @Injectable()
 export class AuditionsService {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(@Inject(ProjectsService) private readonly projectsService: ProjectsService) {}
 
   async request(actorUserId: string, body: RequestAuditionDto) {
     const [application] = await db

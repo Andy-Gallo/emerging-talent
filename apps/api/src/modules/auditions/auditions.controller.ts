@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post, UseGuards } from "@nestjs/common";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AuthGuard } from "../../common/guards/auth.guard";
 import { RequestAuditionDto, SubmitAuditionDto } from "./auditions.dto";
@@ -7,7 +7,7 @@ import { AuditionsService } from "./auditions.service";
 @Controller("auditions")
 @UseGuards(AuthGuard)
 export class AuditionsController {
-  constructor(private readonly auditionsService: AuditionsService) {}
+  constructor(@Inject(AuditionsService) private readonly auditionsService: AuditionsService) {}
 
   @Get()
   async list(@CurrentUser() user: { sub: string }) {

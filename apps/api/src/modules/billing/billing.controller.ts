@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Headers, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Headers, Inject, Post, UseGuards } from "@nestjs/common";
 import { db, plans, stripeEventLog, subscriptions, subscriptionEntitlements } from "@etp/db";
 import { eq } from "drizzle-orm";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
@@ -8,7 +8,7 @@ import { CheckoutDto } from "./billing.dto";
 
 @Controller("billing")
 export class BillingController {
-  constructor(private readonly organizationsService: OrganizationsService) {}
+  constructor(@Inject(OrganizationsService) private readonly organizationsService: OrganizationsService) {}
 
   @Get("plans")
   async listPlans() {

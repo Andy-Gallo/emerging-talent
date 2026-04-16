@@ -10,14 +10,24 @@ type Institution = { id: string; name: string };
 export default function SignUpPage() {
   const router = useRouter();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [institutionsError, setInstitutionsError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const run = async () => {
-      const response = await fetch(`${API_BASE_URL}/institutions?activeOnly=true`);
-      const json = await response.json();
-      setInstitutions(json.data ?? []);
+      try {
+        const response = await fetch(`${API_BASE_URL}/institutions?activeOnly=true`);
+        if (!response.ok) {
+          throw new Error("Unable to load institutions.");
+        }
+
+        const json = (await response.json()) as { data?: Institution[] };
+        setInstitutions(json.data ?? []);
+        setInstitutionsError(null);
+      } catch {
+        setInstitutionsError("Unable to load schools right now. You can still sign up without one.");
+      }
     };
 
     void run();
@@ -28,29 +38,34 @@ export default function SignUpPage() {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(event.currentTarget);
-    const payload = {
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-      displayName: String(formData.get("displayName") ?? ""),
-      institutionId: String(formData.get("institutionId") ?? "") || undefined,
-      graduationYear: formData.get("graduationYear") ? Number(formData.get("graduationYear")) : undefined,
-    };
+    try {
+      const formData = new FormData(event.currentTarget);
+      const payload = {
+        email: String(formData.get("email") ?? ""),
+        password: String(formData.get("password") ?? ""),
+        displayName: String(formData.get("displayName") ?? ""),
+        institutionId: String(formData.get("institutionId") ?? "") || undefined,
+        graduationYear: formData.get("graduationYear") ? Number(formData.get("graduationYear")) : undefined,
+      };
 
-    const response = await fetch(`${API_BASE_URL}/auth/sign-up`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const response = await fetch(`${API_BASE_URL}/auth/sign-up`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      setError("Unable to create account.");
+      if (!response.ok) {
+        setError("Unable to create account.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch {
+      setError("Unable to create account right now. Please try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
   };
 
   return (
@@ -73,6 +88,7 @@ export default function SignUpPage() {
             </option>
           ))}
         </select>
+        {institutionsError ? <p className="mt-2 text-sm text-zinc-600">{institutionsError}</p> : null}
         <label className="mt-4 block text-sm font-medium">Graduation Year</label>
         <input name="graduationYear" type="number" className="mt-2 w-full rounded-md border border-border px-3 py-2" />
         {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}

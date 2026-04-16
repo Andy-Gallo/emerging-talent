@@ -41,7 +41,6 @@ export const userAffiliations = pgTable(
     programName: text("program_name"),
     graduationYear: integer("graduation_year"),
     verificationMethod: text("verification_method").default("email_domain").notNull(),
-    verifiedAt: createdAtColumn(),
     status: text("status").default("pending").notNull(),
     isPrimary: boolean("is_primary").default(true).notNull(),
     createdAt: createdAtColumn(),

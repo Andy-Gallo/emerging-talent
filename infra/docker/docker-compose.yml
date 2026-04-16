@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16
@@ -8,9 +6,18 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: emerging_talent
     ports:
-      - "5432:5432"
+      - "54331:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8082:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
 
   valkey:
     image: valkey/valkey:8

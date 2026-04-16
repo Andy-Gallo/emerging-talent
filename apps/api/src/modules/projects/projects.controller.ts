@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { db, projectVisibilityInstitutions, projects, roles } from "@etp/db";
 import { and, desc, eq } from "drizzle-orm";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
@@ -9,7 +9,7 @@ import { ProjectsService } from "./projects.service";
 
 @Controller("projects")
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(@Inject(ProjectsService) private readonly projectsService: ProjectsService) {}
 
   @UseGuards(OptionalAuthGuard)
   @Get("discover")
