@@ -24,20 +24,25 @@ function SignInForm() {
       password: String(formData.get("password") ?? ""),
     };
 
-    const response = await fetch(`${API_BASE_URL}/auth/sign-in`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/sign-in`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setError("Invalid credentials.");
+        return;
+      }
+
+      router.push(nextPath);
+    } catch {
+      setError("Backend is unavailable. Please start the API server and try again.");
+    } finally {
       setLoading(false);
-      setError("Invalid credentials.");
-      return;
     }
-
-    router.push(nextPath);
   };
 
   return (

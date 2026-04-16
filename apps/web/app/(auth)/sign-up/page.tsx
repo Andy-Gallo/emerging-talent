@@ -15,9 +15,17 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const run = async () => {
-      const response = await fetch(`${API_BASE_URL}/institutions?activeOnly=true`);
-      const json = await response.json();
-      setInstitutions(json.data ?? []);
+      try {
+        const response = await fetch(`${API_BASE_URL}/institutions?activeOnly=true`);
+        if (!response.ok) {
+          setError("Unable to load schools right now.");
+          return;
+        }
+        const json = await response.json();
+        setInstitutions(json.data ?? []);
+      } catch {
+        setError("Backend is unavailable. Please start the API server and try again.");
+      }
     };
 
     void run();
@@ -37,20 +45,25 @@ export default function SignUpPage() {
       graduationYear: formData.get("graduationYear") ? Number(formData.get("graduationYear")) : undefined,
     };
 
-    const response = await fetch(`${API_BASE_URL}/auth/sign-up`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/sign-up`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!response.ok) {
-      setError("Unable to create account.");
+      if (!response.ok) {
+        setError("Unable to create account.");
+        return;
+      }
+
+      router.push("/dashboard");
+    } catch {
+      setError("Backend is unavailable. Please start the API server and try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
   };
 
   return (
