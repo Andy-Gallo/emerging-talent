@@ -35,6 +35,11 @@ export class ForgotPasswordDto {
   email!: string;
 }
 
+export class ResendVerificationEmailDto {
+  @IsEmail()
+  email!: string;
+}
+
 export class ResetPasswordDto {
   @IsString()
   token!: string;
@@ -42,4 +47,9 @@ export class ResetPasswordDto {
   @IsString()
   @MinLength(8)
   password!: string;
+}
+
+export class VerifyEmailDto {
+  @IsString()
+  token!: string;
 }

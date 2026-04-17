@@ -23,13 +23,19 @@ const mailer = nodemailer.createTransport({
 const emailWorker = new Worker(
   "email",
   async (job) => {
-    const { to, subject, text } = job.data as { to: string; subject: string; text: string };
+    const { to, subject, text, html } = job.data as {
+      to: string;
+      subject: string;
+      text: string;
+      html?: string;
+    };
 
     await mailer.sendMail({
       from: process.env.EMAIL_FROM ?? "no-reply@example.local",
       to,
       subject,
       text,
+      html,
     });
   },
   { connection },

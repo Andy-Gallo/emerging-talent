@@ -17,6 +17,8 @@ This repository implements an end-to-end emerging-talent casting and collaborati
 ## Features Implemented
 
 - Authentication: email/password sign-up, sign-in, sign-out, forgot/reset password.
+- Auth email delivery: password reset, verification, and resend-verification links are queued through BullMQ and sent by the worker via Nodemailer.
+- Auth abuse protection: rate limiting on forgot-password, reset-password, and verify-email endpoints.
 - Authorization: global RBAC (`user`, `platform_admin`) + organization role checks.
 - Route protection: middleware + protected app layout and admin route restrictions.
 - Institutions and affiliations.
@@ -76,6 +78,11 @@ docker compose -f infra/docker/docker-compose.yml up -d
 - Password: `postgres`
 - Database: `emerging_talent`
 - App DB connection string: `postgres://postgres:postgres@localhost:54331/emerging_talent`
+
+7. Optional local email UI (Mailpit):
+
+- URL: `http://localhost:8025`
+- Forgot-password and verification emails are delivered here in local development.
 
 ## Default Seed Accounts
 
